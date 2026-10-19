@@ -1,0 +1,997 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>NEURO MEMORY // App & Link Matrix</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Google Fonts: Orbitron, Rajdhani & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Orbitron:wght@700;800;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            neuroBg: '#08090f',
+            neuroSurface: '#0d101a',
+            neuroCard: '#121624',
+            neuroBorder: '#1c2338',
+            neuroPink: '#ff2a85',
+            neuroMagenta: '#d916bb',
+            neuroCyan: '#00f3ff',
+            neuroGreen: '#00ff88',
+          },
+          fontFamily: {
+            title: ['Orbitron', 'sans-serif'],
+            tech: ['Rajdhani', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #08090f;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #1c2338;
+      border-radius: 2px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #00f3ff;
+    }
+
+    /* Synthwave / Cyber Glows */
+    .glow-magenta {
+      box-shadow: 0 0 16px rgba(255, 42, 133, 0.4), inset 0 0 8px rgba(255, 42, 133, 0.15);
+    }
+    .glow-cyan {
+      box-shadow: 0 0 16px rgba(0, 243, 255, 0.4), inset 0 0 8px rgba(0, 243, 255, 0.15);
+    }
+    .glow-green {
+      box-shadow: 0 0 18px rgba(0, 255, 136, 0.6);
+    }
+
+    /* Chrome Title Gradients */
+    .chrome-pink {
+      background: linear-gradient(180deg, #ffffff 0%, #ff8bee 35%, #ff2a85 75%, #940a45 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      filter: drop-shadow(0 0 8px rgba(255, 42, 133, 0.6));
+    }
+    .chrome-cyan {
+      background: linear-gradient(180deg, #ffffff 0%, #a4f7ff 35%, #00f3ff 75%, #006094 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      filter: drop-shadow(0 0 8px rgba(0, 243, 255, 0.6));
+    }
+
+    /* Subtle Cyber Grid Background */
+    .grid-mesh {
+      background-size: 30px 30px;
+      background-image: 
+        linear-gradient(to right, rgba(0, 243, 255, 0.035) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 42, 133, 0.035) 1px, transparent 1px);
+    }
+
+    @keyframes slideToast {
+      from { transform: translate(-50%, -100%); opacity: 0; }
+      to { transform: translate(-50%, 0); opacity: 1; }
+    }
+    .toast-anim {
+      animation: slideToast 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+  </style>
+</head>
+
+<body class="bg-neuroBg text-slate-100 min-h-screen font-mono grid-mesh selection:bg-neuroPink selection:text-white flex flex-col justify-between">
+
+  <!-- Neon Top Border Rail -->
+  <div class="h-1 w-full bg-gradient-to-r from-neuroPink via-purple-600 to-neuroCyan fixed top-0 left-0 z-50"></div>
+
+  <!-- Notification Toast Container -->
+  <div id="toast-container" class="fixed top-5 left-1/2 -translate-x-1/2 z-50 flex flex-col gap-2 pointer-events-none w-11/12 max-w-sm"></div>
+
+  <!-- Main Navigation Header -->
+  <header class="border-b border-neuroBorder bg-neuroSurface/95 backdrop-blur-md sticky top-0 z-40 px-3 sm:px-6 py-2.5">
+    <div class="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-3">
+      
+      <!-- Top Left Logo & Title Branding -->
+      <div class="flex items-center gap-3">
+        <!-- Interactive Header Logo Badge: Tap to upload or view custom artwork -->
+        <label for="custom-header-logo-file" title="Click to upload your custom header logo" class="relative group cursor-pointer w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-[#06070d] border-2 border-neuroPink/80 p-0.5 flex items-center justify-center glow-magenta overflow-hidden flex-shrink-0 transition-transform hover:scale-105 hover:border-neuroCyan">
+          <img id="custom-logo-display" class="w-full h-full object-cover rounded-lg hidden" alt="Header Logo">
+          
+          <!-- Clean Fallback Cyber Brain Emblem if no image file is loaded yet -->
+          <div id="default-logo-placeholder" class="w-full h-full rounded-lg bg-gradient-to-br from-neuroPink/20 to-neuroCyan/20 flex flex-col items-center justify-center text-neuroCyan border border-neuroBorder">
+            <i class="fa-solid fa-brain text-xl"></i>
+            <span class="text-[8px] font-mono text-slate-400 mt-0.5">LOGO</span>
+          </div>
+
+          <!-- Hover Overlay -->
+          <div class="absolute inset-0 bg-black/75 rounded-xl opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center transition text-center">
+            <i class="fa-solid fa-camera text-xs text-white"></i>
+            <span class="text-[8px] text-neuroCyan uppercase font-mono mt-0.5">Upload</span>
+          </div>
+        </label>
+        <input type="file" id="custom-header-logo-file" class="hidden" accept="image/*">
+
+        <!-- Title Typography -->
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="font-title font-black text-xl sm:text-2xl tracking-wider uppercase leading-none">
+              <span class="chrome-pink">NEURO</span>
+              <span class="chrome-cyan">MEMORY</span>
+            </h1>
+            <span id="apps-count-pill" class="text-[10px] font-mono px-2 py-0.5 rounded bg-neuroBg border border-neuroBorder text-neuroCyan">0 APPS</span>
+          </div>
+          <p class="text-[10px] text-slate-500 font-tech tracking-widest uppercase mt-0.5">App & Checkout Matrix</p>
+        </div>
+      </div>
+
+      <!-- Action Tools (Backup, Restore, PWA Install, Add App) -->
+      <div class="flex items-center gap-2">
+        <button id="backup-btn" title="Export Apps (JSON)" class="p-2 sm:px-3 sm:py-1.5 text-xs font-tech font-bold uppercase tracking-wider rounded border border-neuroBorder bg-neuroBg hover:border-neuroCyan hover:text-neuroCyan text-slate-300 transition flex items-center gap-1.5">
+          <i class="fa-solid fa-download text-xs"></i>
+          <span class="hidden sm:inline">Backup</span>
+        </button>
+        
+        <label for="restore-file-input" title="Import Apps (JSON)" class="cursor-pointer p-2 sm:px-3 sm:py-1.5 text-xs font-tech font-bold uppercase tracking-wider rounded border border-neuroBorder bg-neuroBg hover:border-neuroPink hover:text-neuroPink text-slate-300 transition flex items-center gap-1.5">
+          <i class="fa-solid fa-upload text-xs"></i>
+          <span class="hidden sm:inline">Restore</span>
+        </label>
+        <input type="file" id="restore-file-input" class="hidden" accept=".json">
+
+        <button id="pwa-install-btn" class="hidden p-2 sm:px-3 sm:py-1.5 text-xs font-tech font-bold uppercase tracking-wider rounded border border-neuroGreen bg-neuroGreen/10 text-neuroGreen hover:bg-neuroGreen hover:text-black transition flex items-center gap-1.5">
+          <i class="fa-solid fa-mobile-screen-button"></i>
+          <span class="hidden sm:inline">Install</span>
+        </button>
+
+        <button id="add-app-btn" class="px-3.5 py-1.5 text-xs font-tech font-bold uppercase tracking-wider rounded bg-gradient-to-r from-neuroPink to-neuroMagenta text-white hover:brightness-110 transition flex items-center gap-1.5 glow-magenta">
+          <i class="fa-solid fa-plus text-xs"></i>
+          <span>Add App</span>
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- Main Content Area -->
+  <main class="max-w-6xl w-full mx-auto p-4 sm:p-6 flex-grow flex flex-col gap-4">
+
+    <!-- Search Bar -->
+    <div class="bg-neuroSurface border border-neuroBorder rounded-lg p-2.5 flex items-center gap-2">
+      <div class="relative w-full">
+        <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-xs"></i>
+        <input 
+          type="text" 
+          id="search-input" 
+          placeholder="Search by app name, link, or checkout URL..." 
+          class="w-full bg-neuroBg border border-neuroBorder rounded pl-9 pr-8 py-2 text-xs sm:text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:border-neuroCyan transition font-mono"
+        >
+        <button id="clear-search-btn" class="hidden absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white p-1 text-xs">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Cards Grid -->
+    <div id="cards-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+
+    <!-- Zero State Display -->
+    <div id="empty-state" class="flex flex-col items-center justify-center py-20 text-center border border-dashed border-neuroBorder rounded-xl bg-neuroSurface/40 p-6">
+      <div class="w-16 h-16 rounded-xl bg-neuroBg border border-neuroBorder flex items-center justify-center text-slate-600 mb-3 text-2xl">
+        <i class="fa-solid fa-cubes-stacked"></i>
+      </div>
+      <h2 class="text-sm font-tech uppercase tracking-widest font-bold text-slate-200" id="empty-title">NO APPS SAVED</h2>
+      <p class="text-xs text-slate-500 max-w-sm mt-1 mb-4" id="empty-desc">Your memory matrix is completely blank. Add an app with its name, web link, checkout link, and logo.</p>
+      <button onclick="openAppModal()" class="px-4 py-2 rounded bg-neuroCyan text-black font-tech font-bold text-xs uppercase tracking-wider glow-cyan hover:bg-white transition flex items-center gap-2">
+        <i class="fa-solid fa-plus text-xs"></i> Add Your First App
+      </button>
+    </div>
+
+  </main>
+
+  <!-- Add / Edit Modal (Completely blank, ONLY the 4 requested fields) -->
+  <div id="app-modal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-neuroSurface border border-neuroBorder w-full max-w-md rounded-xl overflow-hidden shadow-2xl flex flex-col max-h-[92vh]">
+      
+      <!-- Modal Header -->
+      <div class="px-4 py-3 border-b border-neuroBorder flex items-center justify-between bg-neuroBg">
+        <div class="flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-neuroPink"></span>
+          <h3 id="modal-heading" class="font-tech text-base tracking-widest font-bold text-white uppercase">ADD NEW APP</h3>
+        </div>
+        <button id="close-modal-icon" class="text-slate-400 hover:text-white p-1 text-sm">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <!-- Blank Form: App Name, App Link, App Checkout Link, App Logo -->
+      <form id="app-form" class="p-4 sm:p-5 flex flex-col gap-4 overflow-y-auto">
+        <input type="hidden" id="entry-id" value="">
+        <input type="hidden" id="entry-logo-base64" value="">
+
+        <!-- Field 1: App Name -->
+        <div>
+          <label class="block text-[11px] font-tech uppercase tracking-widest text-slate-400 mb-1">App Name *</label>
+          <input 
+            type="text" 
+            id="entry-name" 
+            required 
+            placeholder="" 
+            value="" 
+            class="w-full bg-neuroBg border border-neuroBorder rounded px-3 py-2 text-xs sm:text-sm text-slate-100 focus:outline-none focus:border-neuroPink transition font-mono"
+          >
+        </div>
+
+        <!-- Field 2: App Link -->
+        <div>
+          <label class="block text-[11px] font-tech uppercase tracking-widest text-slate-400 mb-1">App Link *</label>
+          <input 
+            type="text" 
+            id="entry-link" 
+            required 
+            placeholder="" 
+            value="" 
+            class="w-full bg-neuroBg border border-neuroBorder rounded px-3 py-2 text-xs sm:text-sm text-slate-100 focus:outline-none focus:border-neuroCyan transition font-mono"
+          >
+          <span class="text-[10px] text-slate-500 mt-1 block">"https://" will be added automatically if omitted.</span>
+        </div>
+
+        <!-- Field 3: App Checkout Link -->
+        <div>
+          <label class="block text-[11px] font-tech uppercase tracking-widest text-slate-400 mb-1">App Checkout Link *</label>
+          <input 
+            type="text" 
+            id="entry-checkout-link" 
+            required 
+            placeholder="" 
+            value="" 
+            class="w-full bg-neuroBg border border-neuroBorder rounded px-3 py-2 text-xs sm:text-sm text-slate-100 focus:outline-none focus:border-neuroGreen transition font-mono"
+          >
+          <span class="text-[10px] text-slate-500 mt-1 block">"https://" will be added automatically if omitted.</span>
+        </div>
+
+        <!-- Field 4: App Logo Upload -->
+        <div>
+          <label class="block text-[11px] font-tech uppercase tracking-widest text-slate-400 mb-1">App Logo</label>
+          <div class="flex items-center gap-3">
+            <div id="modal-logo-preview-box" class="w-14 h-14 rounded-lg bg-neuroBg border border-dashed border-neuroBorder flex items-center justify-center overflow-hidden flex-shrink-0">
+              <span id="modal-logo-placeholder-text" class="text-[9px] font-mono text-slate-500 text-center px-1">NO LOGO</span>
+              <img id="modal-logo-preview-img" class="w-full h-full object-cover hidden" alt="App Logo Preview">
+            </div>
+            
+            <div class="flex-grow">
+              <label for="entry-logo-input" class="cursor-pointer inline-flex items-center gap-2 px-3 py-1.5 rounded border border-neuroBorder bg-neuroBg hover:border-neuroCyan text-slate-300 text-xs font-mono transition">
+                <i class="fa-solid fa-cloud-arrow-up text-neuroCyan"></i>
+                <span id="logo-file-status-label">Choose Logo Image</span>
+              </label>
+              <button type="button" id="remove-logo-btn" class="hidden ml-2 text-[10px] font-mono text-rose-400 hover:text-rose-300 underline">Remove</button>
+              <input type="file" id="entry-logo-input" class="hidden" accept="image/*">
+              <span class="text-[10px] text-slate-500 block mt-1">Upload PNG, JPG, or SVG icon.</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Modal Actions -->
+        <div class="flex items-center justify-end gap-2 pt-3 border-t border-neuroBorder mt-1">
+          <button type="button" id="cancel-modal-btn" class="px-3.5 py-1.5 rounded text-xs font-tech font-bold uppercase tracking-wider text-slate-400 hover:text-white transition">
+            Cancel
+          </button>
+          <button type="submit" class="px-4 py-1.5 rounded bg-gradient-to-r from-neuroPink to-neuroMagenta text-white font-tech font-bold text-xs uppercase tracking-wider glow-magenta hover:brightness-110 transition flex items-center gap-1.5">
+            <i class="fa-solid fa-floppy-disk text-xs"></i>
+            <span id="save-button-label">Save App</span>
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="border-t border-neuroBorder bg-neuroSurface/60 px-4 py-2 text-center text-[11px] text-slate-500 font-mono">
+    <div class="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-1">
+      <div class="flex items-center gap-2">
+        <span class="w-1.5 h-1.5 rounded-full bg-neuroCyan"></span>
+        <span>NEURO MEMORY // FAST COPY MATRIX</span>
+      </div>
+      <div>Independent Field Copy Engine</div>
+    </div>
+  </footer>
+
+  <!-- Core JavaScript Engine -->
+  <script>
+    const STORAGE_KEY = 'neuro_memory_apps_v4';
+    const HEADER_LOGO_STORAGE_KEY = 'neuro_memory_header_logo_v4';
+
+    // State: strictly starts empty (no mock data or presets)
+    let appItems = [];
+    let searchQuery = '';
+    let deferredPrompt = null;
+
+    // Header Logo Persistence
+    function initHeaderLogoManager() {
+      const imgDisplay = document.getElementById('custom-logo-display');
+      const placeholder = document.getElementById('default-logo-placeholder');
+      const fileInput = document.getElementById('custom-header-logo-file');
+
+      const savedLogo = localStorage.getItem(HEADER_LOGO_STORAGE_KEY);
+      if (savedLogo) {
+        imgDisplay.src = savedLogo;
+        imgDisplay.classList.remove('hidden');
+        placeholder.classList.add('hidden');
+      } else {
+        imgDisplay.classList.add('hidden');
+        placeholder.classList.remove('hidden');
+      }
+
+      fileInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+          const dataUrl = evt.target.result;
+          try {
+            localStorage.setItem(HEADER_LOGO_STORAGE_KEY, dataUrl);
+            imgDisplay.src = dataUrl;
+            imgDisplay.classList.remove('hidden');
+            placeholder.classList.add('hidden');
+            showToast('Header logo updated!', 'success');
+          } catch (err) {
+            showToast('Image file too large for local storage.', 'error');
+          }
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    // Modal Logo Input Handler
+    function initModalLogoUploader() {
+      const fileInput = document.getElementById('entry-logo-input');
+      const previewImg = document.getElementById('modal-logo-preview-img');
+      const placeholderText = document.getElementById('modal-logo-placeholder-text');
+      const hiddenBase64 = document.getElementById('entry-logo-base64');
+      const statusLabel = document.getElementById('logo-file-status-label');
+      const removeBtn = document.getElementById('remove-logo-btn');
+
+      fileInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+          const base64 = evt.target.result;
+          hiddenBase64.value = base64;
+          previewImg.src = base64;
+          previewImg.classList.remove('hidden');
+          placeholderText.classList.add('hidden');
+          statusLabel.textContent = 'Change Logo';
+          removeBtn.classList.remove('hidden');
+        };
+        reader.readAsDataURL(file);
+      });
+
+      removeBtn.addEventListener('click', () => {
+        hiddenBase64.value = '';
+        fileInput.value = '';
+        previewImg.src = '';
+        previewImg.classList.add('hidden');
+        placeholderText.classList.remove('hidden');
+        statusLabel.textContent = 'Choose Logo Image';
+        removeBtn.classList.add('hidden');
+      });
+    }
+
+    // Load Vault with 0 presets
+    function loadVault() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          appItems = Array.isArray(parsed) ? parsed : [];
+        } else {
+          appItems = [];
+        }
+      } catch (e) {
+        appItems = [];
+      }
+    }
+
+    function saveVault() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(appItems));
+      } catch (e) {
+        showToast('Local storage quota exceeded.', 'error');
+      }
+      renderCards();
+    }
+
+    function getFilteredItems() {
+      if (!searchQuery) return appItems;
+      const q = searchQuery.toLowerCase();
+      return appItems.filter(item => {
+        return (item.name || '').toLowerCase().includes(q) ||
+               (item.link || '').toLowerCase().includes(q) ||
+               (item.checkoutLink || '').toLowerCase().includes(q);
+      });
+    }
+
+    function renderCards() {
+      const container = document.getElementById('cards-grid');
+      const emptyState = document.getElementById('empty-state');
+      const countPill = document.getElementById('apps-count-pill');
+      const filtered = getFilteredItems();
+
+      countPill.textContent = `${appItems.length} APP${appItems.length === 1 ? '' : 'S'}`;
+
+      if (filtered.length === 0) {
+        container.innerHTML = '';
+        emptyState.classList.remove('hidden');
+        emptyState.classList.add('flex');
+
+        if (appItems.length === 0) {
+          document.getElementById('empty-title').textContent = 'NO APPS SAVED';
+          document.getElementById('empty-desc').textContent = 'Your memory matrix is completely blank. Add an app with its name, web link, checkout link, and logo.';
+        } else {
+          document.getElementById('empty-title').textContent = 'NO MATCHING APPS';
+          document.getElementById('empty-desc').textContent = 'No records matched your search query.';
+        }
+        return;
+      }
+
+      emptyState.classList.add('hidden');
+      emptyState.classList.remove('flex');
+
+      container.innerHTML = filtered.map(item => {
+        const initials = (item.name || 'AP').substring(0, 2).toUpperCase();
+        
+        // Logo Thumbnail: Uploaded image or high-tech initials avatar
+        const logoMarkup = item.logo
+          ? `<img src="${item.logo}" alt="${escapeHtml(item.name)}" class="w-12 h-12 rounded-lg object-cover border border-neuroBorder">`
+          : `<div class="w-12 h-12 rounded-lg bg-gradient-to-br from-neuroPink/25 to-neuroCyan/25 border border-neuroBorder flex items-center justify-center font-title font-bold text-sm text-neuroCyan">${initials}</div>`;
+
+        return `
+          <div class="bg-neuroCard border border-neuroBorder hover:border-neuroCyan/50 rounded-xl p-4 flex flex-col justify-between transition duration-150">
+            <div>
+              
+              <!-- Card Top Header: App Logo, Name Box, and Card Action Menu -->
+              <div class="flex items-start justify-between gap-3 mb-3.5">
+                <div class="flex items-center gap-3 min-w-0">
+                  <div class="flex-shrink-0 glow-cyan rounded-lg">
+                    ${logoMarkup}
+                  </div>
+                  <div class="min-w-0">
+                    <span class="text-[9px] font-mono uppercase tracking-wider text-slate-500 block">App Name</span>
+                    <h3 class="font-tech font-bold text-lg text-white truncate leading-tight" title="${escapeHtml(item.name)}">
+                      ${escapeHtml(item.name)}
+                    </h3>
+                  </div>
+                </div>
+
+                <!-- Edit & Delete buttons -->
+                <div class="flex items-center gap-1 flex-shrink-0">
+                  <button onclick="editEntry('${item.id}')" title="Edit App" class="w-7 h-7 rounded bg-neuroBg border border-neuroBorder hover:border-neuroCyan text-slate-400 hover:text-neuroCyan flex items-center justify-center text-xs transition">
+                    <i class="fa-solid fa-pen"></i>
+                  </button>
+                  <button onclick="deleteEntry('${item.id}')" title="Delete App" class="w-7 h-7 rounded bg-neuroBg border border-neuroBorder hover:border-neuroPink text-slate-400 hover:text-neuroPink flex items-center justify-center text-xs transition">
+                    <i class="fa-solid fa-trash"></i>
+                  </button>
+                </div>
+              </div>
+
+              <!-- FIELD 1: App Name with independent Copy button -->
+              <div class="mb-2.5 bg-neuroBg/80 p-2 rounded-lg border border-neuroBorder/70 flex items-center justify-between gap-2">
+                <div class="min-w-0 flex-grow">
+                  <span class="text-[9px] font-tech uppercase tracking-wider text-slate-500 block">Name</span>
+                  <span class="text-xs font-mono text-slate-200 truncate block font-bold">${escapeHtml(item.name)}</span>
+                </div>
+                <button 
+                  id="copy-btn-name-${item.id}"
+                  onclick="copyIndividualField('${escapeJs(item.name)}', 'name', '${item.id}')"
+                  class="px-2.5 py-1 rounded bg-slate-800 hover:bg-neuroPink text-slate-300 hover:text-white border border-slate-700 hover:border-neuroPink text-[10px] font-mono font-bold tracking-wider transition flex items-center gap-1.5 flex-shrink-0 active:scale-95"
+                >
+                  <i class="fa-regular fa-clone text-[10px]"></i>
+                  <span id="copy-label-name-${item.id}">COPY</span>
+                </button>
+              </div>
+
+              <!-- FIELD 2: App Link with independent Copy button & external launch -->
+              <div class="mb-2.5 bg-neuroBg/80 p-2 rounded-lg border border-neuroBorder/70 flex items-center justify-between gap-2">
+                <div class="min-w-0 flex-grow">
+                  <span class="text-[9px] font-tech uppercase tracking-wider text-neuroCyan block">App Link</span>
+                  <span class="text-xs font-mono text-slate-300 truncate block" title="${escapeHtml(item.link)}">${escapeHtml(cleanDisplayUrl(item.link))}</span>
+                </div>
+                <div class="flex items-center gap-1 flex-shrink-0">
+                  <button 
+                    id="copy-btn-link-${item.id}"
+                    onclick="copyIndividualField('${escapeJs(item.link)}', 'link', '${item.id}')"
+                    class="px-2.5 py-1 rounded bg-neuroCyan/10 hover:bg-neuroCyan text-neuroCyan hover:text-black border border-neuroCyan/30 hover:border-neuroCyan text-[10px] font-mono font-bold tracking-wider transition flex items-center gap-1.5 active:scale-95"
+                  >
+                    <i class="fa-regular fa-clone text-[10px]"></i>
+                    <span id="copy-label-link-${item.id}">COPY</span>
+                  </button>
+                  <a 
+                    href="${escapeHtml(item.link)}" 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    title="Open App Link"
+                    class="p-1 px-1.5 rounded bg-neuroBg border border-neuroBorder hover:border-slate-400 text-slate-400 hover:text-white text-[11px] transition"
+                  >
+                    <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                  </a>
+                </div>
+              </div>
+
+              <!-- FIELD 3: App Checkout Link with independent Copy button & external launch -->
+              <div class="bg-neuroBg/80 p-2 rounded-lg border border-neuroBorder/70 flex items-center justify-between gap-2">
+                <div class="min-w-0 flex-grow">
+                  <span class="text-[9px] font-tech uppercase tracking-wider text-neuroGreen block">Checkout Link</span>
+                  <span class="text-xs font-mono text-slate-300 truncate block" title="${escapeHtml(item.checkoutLink)}">${escapeHtml(cleanDisplayUrl(item.checkoutLink))}</span>
+                </div>
+                <div class="flex items-center gap-1 flex-shrink-0">
+                  <button 
+                    id="copy-btn-checkout-${item.id}"
+                    onclick="copyIndividualField('${escapeJs(item.checkoutLink)}', 'checkout', '${item.id}')"
+                    class="px-2.5 py-1 rounded bg-neuroGreen/10 hover:bg-neuroGreen text-neuroGreen hover:text-black border border-neuroGreen/30 hover:border-neuroGreen text-[10px] font-mono font-bold tracking-wider transition flex items-center gap-1.5 active:scale-95"
+                  >
+                    <i class="fa-regular fa-clone text-[10px]"></i>
+                    <span id="copy-label-checkout-${item.id}">COPY</span>
+                  </button>
+                  <a 
+                    href="${escapeHtml(item.checkoutLink)}" 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    title="Open Checkout Link"
+                    class="p-1 px-1.5 rounded bg-neuroBg border border-neuroBorder hover:border-slate-400 text-slate-400 hover:text-white text-[11px] transition"
+                  >
+                    <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                  </a>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Individual Clipboard Engine
+    window.copyIndividualField = function(text, fieldType, id) {
+      if (!text) {
+        showToast('Nothing to copy.', 'error');
+        return;
+      }
+
+      let succeeded = false;
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.setAttribute('readonly', '');
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+
+      try {
+        succeeded = document.execCommand('copy');
+      } catch (err) {
+        console.warn(err);
+      }
+      document.body.removeChild(ta);
+
+      if (!succeeded && navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text).then(() => {
+          showFieldCopySuccess(fieldType, id);
+        }).catch(() => {
+          showToast('Failed to copy to clipboard.', 'error');
+        });
+      } else if (succeeded) {
+        showFieldCopySuccess(fieldType, id);
+      } else {
+        showToast('Clipboard access unavailable.', 'error');
+      }
+    };
+
+    function showFieldCopySuccess(fieldType, id) {
+      const btn = document.getElementById(`copy-btn-${fieldType}-${id}`);
+      const lbl = document.getElementById(`copy-label-${fieldType}-${id}`);
+
+      if (btn && lbl) {
+        const origClasses = btn.className;
+        const origText = lbl.textContent;
+
+        btn.className = "px-2.5 py-1 rounded bg-neuroGreen text-black font-mono font-bold text-[10px] tracking-wider transition flex items-center gap-1.5 glow-green";
+        lbl.innerHTML = '<i class="fa-solid fa-check text-[10px]"></i> COPIED!';
+
+        setTimeout(() => {
+          btn.className = origClasses;
+          lbl.textContent = origText;
+        }, 1200);
+      }
+
+      const fieldNames = { name: 'App Name', link: 'App Link', checkout: 'Checkout Link' };
+      showToast(`${fieldNames[fieldType] || 'Field'} copied!`, 'success');
+    }
+
+    // Modal Operations: Clean blank state, exactly 4 fields
+    const modal = document.getElementById('app-modal');
+    const form = document.getElementById('app-form');
+    const modalHeading = document.getElementById('modal-heading');
+    const saveButtonLabel = document.getElementById('save-button-label');
+
+    window.openAppModal = function(editId = null) {
+      // Clear every field thoroughly
+      form.reset();
+      document.getElementById('entry-id').value = '';
+      document.getElementById('entry-name').value = '';
+      document.getElementById('entry-link').value = '';
+      document.getElementById('entry-checkout-link').value = '';
+      document.getElementById('entry-logo-base64').value = '';
+      
+      const previewImg = document.getElementById('modal-logo-preview-img');
+      const placeholderText = document.getElementById('modal-logo-placeholder-text');
+      const statusLabel = document.getElementById('logo-file-status-label');
+      const removeBtn = document.getElementById('remove-logo-btn');
+
+      previewImg.src = '';
+      previewImg.classList.add('hidden');
+      placeholderText.classList.remove('hidden');
+      statusLabel.textContent = 'Choose Logo Image';
+      removeBtn.classList.add('hidden');
+
+      if (editId) {
+        const item = appItems.find(i => i.id === editId);
+        if (item) {
+          document.getElementById('entry-id').value = item.id;
+          document.getElementById('entry-name').value = item.name || '';
+          document.getElementById('entry-link').value = item.link || '';
+          document.getElementById('entry-checkout-link').value = item.checkoutLink || '';
+
+          if (item.logo) {
+            document.getElementById('entry-logo-base64').value = item.logo;
+            previewImg.src = item.logo;
+            previewImg.classList.remove('hidden');
+            placeholderText.classList.add('hidden');
+            statusLabel.textContent = 'Change Logo';
+            removeBtn.classList.remove('hidden');
+          }
+
+          modalHeading.textContent = 'EDIT APP';
+          saveButtonLabel.textContent = 'Update';
+        }
+      } else {
+        modalHeading.textContent = 'ADD NEW APP';
+        saveButtonLabel.textContent = 'Save App';
+      }
+
+      modal.classList.remove('hidden');
+      document.getElementById('entry-name').focus();
+    };
+
+    function closeAppModal() {
+      modal.classList.add('hidden');
+    }
+
+    document.getElementById('add-app-btn').addEventListener('click', () => openAppModal());
+    document.getElementById('close-modal-icon').addEventListener('click', closeAppModal);
+    document.getElementById('cancel-modal-btn').addEventListener('click', closeAppModal);
+
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) closeAppModal();
+    });
+
+    // Form Submission
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+
+      const id = document.getElementById('entry-id').value;
+      const name = document.getElementById('entry-name').value.trim();
+      let link = document.getElementById('entry-link').value.trim();
+      let checkoutLink = document.getElementById('entry-checkout-link').value.trim();
+      const logo = document.getElementById('entry-logo-base64').value;
+
+      if (!name || !link || !checkoutLink) {
+        showToast('App Name, App Link, and Checkout Link are required.', 'error');
+        return;
+      }
+
+      // Automatically prepend https:// if missing
+      if (!/^https?:\/\//i.test(link)) {
+        link = 'https://' + link;
+      }
+      if (!/^https?:\/\//i.test(checkoutLink)) {
+        checkoutLink = 'https://' + checkoutLink;
+      }
+
+      if (id) {
+        const index = appItems.findIndex(i => i.id === id);
+        if (index !== -1) {
+          appItems[index] = {
+            ...appItems[index],
+            name,
+            link,
+            checkoutLink,
+            logo: logo || null,
+            updatedAt: Date.now()
+          };
+          showToast('App details updated.', 'success');
+        }
+      } else {
+        const newEntry = {
+          id: 'app-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5),
+          name,
+          link,
+          checkoutLink,
+          logo: logo || null,
+          createdAt: Date.now()
+        };
+        appItems.unshift(newEntry);
+        showToast('App saved to Neuro Memory.', 'success');
+      }
+
+      saveVault();
+      closeAppModal();
+    });
+
+    window.editEntry = function(id) {
+      openAppModal(id);
+    };
+
+    window.deleteEntry = function(id) {
+      const item = appItems.find(i => i.id === id);
+      if (!item) return;
+
+      createConfirmToast(`Delete "${item.name}"?`, () => {
+        appItems = appItems.filter(i => i.id !== id);
+        saveVault();
+        showToast('App entry deleted.', 'success');
+      });
+    };
+
+    // Toasts & Confirmation Box
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      
+      let borderCol = 'border-neuroCyan';
+      let icon = 'fa-circle-info text-neuroCyan';
+
+      if (type === 'success') {
+        borderCol = 'border-neuroGreen';
+        icon = 'fa-circle-check text-neuroGreen';
+      } else if (type === 'error') {
+        borderCol = 'border-neuroPink';
+        icon = 'fa-triangle-exclamation text-neuroPink';
+      }
+
+      toast.className = `toast-anim bg-neuroSurface border ${borderCol} text-white px-3.5 py-2.5 rounded-lg shadow-xl backdrop-blur-md flex items-center gap-2 text-xs pointer-events-auto`;
+      toast.innerHTML = `
+        <i class="fa-solid ${icon}"></i>
+        <span class="font-mono">${escapeHtml(message)}</span>
+      `;
+
+      container.appendChild(toast);
+
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translate(-50%, -10px)';
+        toast.style.transition = 'all 0.25s ease';
+        setTimeout(() => toast.remove(), 250);
+      }, 2000);
+    }
+
+    function createConfirmToast(text, onConfirm) {
+      const container = document.getElementById('toast-container');
+      const box = document.createElement('div');
+      box.className = `toast-anim bg-neuroSurface border border-neuroPink text-white px-3.5 py-3 rounded-lg shadow-2xl backdrop-blur-md flex flex-col gap-2.5 text-xs pointer-events-auto`;
+      box.innerHTML = `
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-triangle-exclamation text-neuroPink"></i>
+          <span class="font-mono font-bold">${escapeHtml(text)}</span>
+        </div>
+        <div class="flex items-center justify-end gap-2">
+          <button id="toast-cancel" class="px-2 py-1 rounded bg-slate-800 text-slate-300 hover:text-white">Cancel</button>
+          <button id="toast-confirm" class="px-2.5 py-1 rounded bg-neuroPink text-white font-bold hover:brightness-110">Delete</button>
+        </div>
+      `;
+
+      container.appendChild(box);
+
+      box.querySelector('#toast-cancel').addEventListener('click', () => box.remove());
+      box.querySelector('#toast-confirm').addEventListener('click', () => {
+        box.remove();
+        onConfirm();
+      });
+
+      setTimeout(() => {
+        if (box.parentNode) box.remove();
+      }, 6000);
+    }
+
+    // Search Box
+    const searchInput = document.getElementById('search-input');
+    const clearSearchBtn = document.getElementById('clear-search-btn');
+
+    searchInput.addEventListener('input', (e) => {
+      searchQuery = e.target.value.trim();
+      clearSearchBtn.classList.toggle('hidden', searchQuery.length === 0);
+      renderCards();
+    });
+
+    clearSearchBtn.addEventListener('click', () => {
+      searchInput.value = '';
+      searchQuery = '';
+      clearSearchBtn.classList.add('hidden');
+      renderCards();
+      searchInput.focus();
+    });
+
+    // Backup & Restore
+    document.getElementById('backup-btn').addEventListener('click', () => {
+      if (appItems.length === 0) {
+        showToast('Vault is empty. Nothing to export.', 'info');
+        return;
+      }
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appItems, null, 2));
+      const dl = document.createElement('a');
+      dl.setAttribute("href", dataStr);
+      dl.setAttribute("download", `neuro-memory-apps-${new Date().toISOString().slice(0, 10)}.json`);
+      document.body.appendChild(dl);
+      dl.click();
+      dl.remove();
+      showToast('Backup JSON exported.', 'success');
+    });
+
+    document.getElementById('restore-file-input').addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        try {
+          const parsed = JSON.parse(evt.target.result);
+          if (!Array.isArray(parsed)) throw new Error('Invalid format');
+
+          const validEntries = parsed.filter(i => i && i.name && i.link).map(i => ({
+            id: i.id || 'restored-' + Math.random().toString(36).substr(2, 6),
+            name: i.name,
+            link: i.link,
+            checkoutLink: i.checkoutLink || i.link,
+            logo: i.logo || null,
+            createdAt: i.createdAt || Date.now()
+          }));
+
+          if (validEntries.length === 0) {
+            showToast('No valid app records found.', 'error');
+            return;
+          }
+
+          createConfirmToast(`Restore ${validEntries.length} apps?`, () => {
+            const existingLinks = new Set(appItems.map(i => (i.link || '').toLowerCase()));
+            let added = 0;
+            validEntries.forEach(rec => {
+              if (!existingLinks.has((rec.link || '').toLowerCase())) {
+                appItems.unshift(rec);
+                existingLinks.add(rec.link.toLowerCase());
+                added++;
+              }
+            });
+            saveVault();
+            showToast(`Restored ${added} new apps.`, 'success');
+          });
+        } catch (err) {
+          showToast('Failed to parse JSON file.', 'error');
+        }
+      };
+      reader.readAsText(file);
+      e.target.value = '';
+    });
+
+    // Standalone PWA Setup
+    function setupPWA() {
+      const manifest = {
+        name: "NEURO MEMORY",
+        short_name: "NeuroMemory",
+        start_url: window.location.href,
+        display: "standalone",
+        background_color: "#08090f",
+        theme_color: "#ff2a85",
+        description: "Cyberpunk App & Checkout Link Matrix.",
+        icons: [
+          {
+            src: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%2308090f'/%3E%3Cpath d='M47 22 C34 20 22 28 20 40 C18 48 23 54 20 62 C17 70 25 78 35 77 C41 76 44 82 48 80 Z' fill='%23ff2a85'/%3E%3Cpath d='M53 22 C66 20 78 28 80 40 C82 48 77 54 80 62 C83 70 75 78 65 77 C59 76 56 82 52 80 Z' fill='%2300f3ff'/%3E%3C/svg%3E",
+            sizes: "192x192 512x512",
+            type: "image/svg+xml"
+          }
+        ]
+      };
+
+      const manifestBlob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
+      const manifestURL = URL.createObjectURL(manifestBlob);
+      const linkTag = document.createElement('link');
+      linkTag.rel = 'manifest';
+      linkTag.href = manifestURL;
+      document.head.appendChild(linkTag);
+
+      const pwaBtn = document.getElementById('pwa-install-btn');
+      window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        pwaBtn.classList.remove('hidden');
+      });
+
+      pwaBtn.addEventListener('click', async () => {
+        if (!deferredPrompt) return;
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        if (outcome === 'accepted') {
+          pwaBtn.classList.add('hidden');
+          showToast('App installed to home screen.', 'success');
+        }
+        deferredPrompt = null;
+      });
+
+      window.addEventListener('appinstalled', () => {
+        pwaBtn.classList.add('hidden');
+      });
+    }
+
+    function cleanDisplayUrl(url) {
+      if (!url) return '';
+      return url.replace(/^https?:\/\//i, '').replace(/\/$/, '');
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    function escapeJs(str) {
+      if (!str) return '';
+      return String(str).replace(/'/g, "\\'").replace(/"/g, '\\"');
+    }
+
+    // Keyboard Shortcuts (Ctrl/Cmd + K for search, Esc to close modal)
+    window.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        searchInput.focus();
+      }
+      if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
+        closeAppModal();
+      }
+    });
+
+    window.onload = function() {
+      initHeaderLogoManager();
+      initModalLogoUploader();
+      loadVault();
+      renderCards();
+      setupPWA();
+    };
+  </script>
+</body>
+</html>
